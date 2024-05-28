@@ -9,6 +9,11 @@ connectToDb()
 //middleware to let server access the request's body
 app.use(express.json());
 
+//a default response for all requests
+app.get("/", (req, res)=>{
+    res.send("api is working use get: /getusers or post: /createuser");
+});
+
 //specifing Api Routes
 app.use('/apis', apis);
 
