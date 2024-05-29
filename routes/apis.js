@@ -38,7 +38,7 @@ router.post(
       });
 
       //generating the jwt token based on user.id to send back to user
-      var token = jwt.sign({"id":user.id}, process.env.JWT_SIGN);
+      var token = jwt.sign({"id":user.id, "name": user.name}, process.env.JWT_SIGN);
 
       console.log(token);
       res.json({'authToken': token});
