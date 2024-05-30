@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
-const apis = require('./routes/apis')
+const userRoute = require('./routes/user')
+const noteRoute = require('./routes/note')
 
 //establishing connection to the Cloud Mongo DB
 const connectToDb = require('./database')
@@ -14,8 +15,10 @@ app.get("/", (req, res)=>{
     res.send("api is working use get: /getusers or post: /createuser");
 });
 
-//specifing Api Routes
-app.use('/apis', apis);
+//specifing Api Routes for Users
+app.use('/user', userRoute);
+//specifing Api Routes for Notes
+app.use('/note', noteRoute);
 
 
 // Starting the server
