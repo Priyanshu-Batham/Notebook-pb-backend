@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const userRoute = require('./routes/user')
 const noteRoute = require('./routes/note')
+const cors = require('cors')
 
 //establishing connection to the Cloud Mongo DB
 const connectToDb = require('./database')
@@ -9,6 +10,9 @@ connectToDb()
 
 //middleware to let server access the request's body
 app.use(express.json());
+
+//middleware to enable cors
+app.use(cors());
 
 //a default response for all requests
 app.get("/", (req, res)=>{
