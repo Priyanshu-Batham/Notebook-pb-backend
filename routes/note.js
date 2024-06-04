@@ -10,15 +10,13 @@ const noteModel = require("../models/note");
 router.post(
   "/create",
   auth,
-  [
-    body("title").isLength({ min: 3 }),
-    body("description").isLength({ min: 5 }),
-  ],
+  [body("title").isLength({min: 1}), body("description").isLength({min: 1})],
   async (req, res) => {
     try {
       //check if request body has proper title and description
       const errors = validationResult(req);
-      if (!errors.isEmpty()) return res.send(errors);
+      if (!errors.isEmpty())
+        return res.json({ error: "Title and description should not be empty" });
 
       //creating the note record in database
       const note = await noteModel.create({
@@ -37,22 +35,18 @@ router.post(
 );
 
 //ROUTE 2: Read Note
-router.post(
-  "/read",
-  auth,
-  async (req, res) => {
-    try {
-      //middleware fun: auth() appended the userId from JWT Token
-      const userId = req.id;
+router.post("/read", auth, async (req, res) => {
+  try {
+    //middleware fun: auth() appended the userId from JWT Token
+    const userId = req.id;
 
-      //Fetching the notes of user whose userID we got from JWT token
-      const notes = await noteModel.find({userId: userId});
-      return res.send(notes);
-    } catch (e) {
-      return res.send(e.message);
-    }
+    //Fetching the notes of user whose userID we got from JWT token
+    const notes = await noteModel.find({ userId: userId });
+    return res.send(notes);
+  } catch (e) {
+    return res.send(e.message);
   }
-);
+});
 
 //ROUTE 3: Update Note
 router.put(
@@ -70,19 +64,23 @@ router.put(
 
       //fetch the note from req.params.id given in request url
       const noteId = req.params.noteId;
-      
+
       //check if the note is of this user or he's tryna update someone else's note
-      let note = await noteModel.findOne({_id: noteId});
-      if(req.id.toString() !== note.userId.toString()) return res.send("Not your Note Nigga");
+      let note = await noteModel.findOne({ _id: noteId });
+      if (req.id.toString() !== note.userId.toString())
+        return res.send("Not your Note Nigga");
 
       //if all above conditions are passed that means its safe to update the note
-      await noteModel.updateOne({ _id: noteId }, { 
-        title: req.body.title,
-        description: req.body.description,
-        tag: req.body.tag
-       });
+      await noteModel.updateOne(
+        { _id: noteId },
+        {
+          title: req.body.title,
+          description: req.body.description,
+          tag: req.body.tag,
+        }
+      );
 
-       note = await noteModel.findOne({_id: noteId});
+      note = await noteModel.findOne({ _id: noteId });
 
       console.log(note);
       return res.send(note);
@@ -93,28 +91,45 @@ router.put(
 );
 
 //ROUTE 4: Delete Note
-router.delete(
-  "/delete:noteId",
-  auth,
-  async (req, res) => {
-    try {
-      //fetch the note from req.params.id given in request url
-      const noteId = req.params.noteId;
-      
-      //check if the note is of this user or he's tryna update someone else's note
-      let note = await noteModel.findOne({_id: noteId});
-      if(req.id.toString() !== note.userId.toString()) return res.send("Not your Note Nigga");
+router.delete("/delete:noteId", auth, async (req, res) => {
+  try {
+    //fetch the note id from req.params.id given in request url
+    const noteId = req.params.noteId;
 
-      //if all above conditions are passed that means its safe to delete the note
-      const dbAck = await noteModel.deleteOne({ _id: noteId });
+    //check if the note is of this user or he's tryna update someone else's note
+    let note = await noteModel.findOne({ _id: noteId });
+    if (req.id.toString() !== note.userId.toString())
+      return res.send("Not your Note Nigga");
 
-      console.log(dbAck);
-      return res.send(dbAck);
-    } catch (e) {
-      return res.send(e.message);
-    }
+    //if all above conditions are passed that means its safe to delete the note
+    const dbAck = await noteModel.deleteOne({ _id: noteId });
+
+    console.log(dbAck);
+    return res.send(dbAck);
+  } catch (e) {
+    return res.send(e.message);
   }
-);
+});
 
+//ROUTE 5: Get Specific Note to Read
+router.get("/getThisOne:noteId", async (req, res) => {
+  try {
+    //fetch the note id from req.params.id given in request url
+    const noteId = req.params.noteId;
+
+    //check if the note is present in database
+    let note = await noteModel.findOne({ _id: noteId });
+
+    //if note is not found return error
+    if (!note) return res.json({ error: "note not found" });
+
+    //else return the note
+    console.log(note);
+    return res.send(note);
+  } catch (e) {
+    //if any error occurs send error message
+    return res.send(e.message);
+  }
+});
 
 module.exports = router;
