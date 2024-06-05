@@ -112,7 +112,7 @@ router.delete("/delete:noteId", auth, async (req, res) => {
 });
 
 //ROUTE 5: Get Specific Note to Read
-router.get("/getThisOne:noteId", async (req, res) => {
+router.get("/getThisOne/:noteId", async (req, res) => {
   try {
     //fetch the note id from req.params.id given in request url
     const noteId = req.params.noteId;
